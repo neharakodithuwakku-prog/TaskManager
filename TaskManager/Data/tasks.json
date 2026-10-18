@@ -1,11 +1,38 @@
 [
   {
     "Id": 1,
-    "Title": "hii",
-    "Description": "hi",
+    "Title": "Wash Clothes",
+    "Description": "Wash clothes in the morning",
+    "Priority": "High",
+    "DueDate": "2026-10-19T00:00:00",
+    "IsCompleted": false,
+    "CreatedAt": "2026-10-19T01:06:16.7529491+05:30"
+  },
+  {
+    "Id": 2,
+    "Title": "Feed the cat",
+    "Description": "Feed Kangry at 10.00 am",
     "Priority": "High",
     "DueDate": null,
     "IsCompleted": false,
-    "CreatedAt": "2026-10-19T00:50:52.8706695+05:30"
+    "CreatedAt": "2026-10-19T01:06:40.4978871+05:30"
+  },
+  {
+    "Id": 3,
+    "Title": "Finish the assignement",
+    "Description": "Finish the assignment as soon as possible",
+    "Priority": "High",
+    "DueDate": null,
+    "IsCompleted": false,
+    "CreatedAt": "2026-10-19T01:07:10.8917537+05:30"
+  },
+  {
+    "Id": 4,
+    "Title": "Clean the garden",
+    "Description": "Clean the leaves in the garden",
+    "Priority": "Medium",
+    "DueDate": "2026-10-19T00:00:00",
+    "IsCompleted": false,
+    "CreatedAt": "2026-10-19T01:07:44.2313329+05:30"
   }
 ]

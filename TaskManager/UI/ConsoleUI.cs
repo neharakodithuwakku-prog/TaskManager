@@ -5,37 +5,30 @@ using TaskManager.Services;
 
 namespace TaskManager.UI
 {
-    /// <summary>
-    /// The console menu (the "ConsoleUI" box in the architecture diagram).
-    /// It only reads input and prints output; all rules live in TaskService.
-    /// </summary>
-    public class ConsoleUI
+    public class ConsoleUI // Displays the console menu, handles the user input and calls TaskService methods
     {
         private const string DateFormat = "yyyy-MM-dd";
 
-        // How often the background task checks for unsaved changes.
-        private static readonly TimeSpan AutoSaveInterval = TimeSpan.FromSeconds(3);
+      
+        private static readonly TimeSpan AutoSaveInterval = TimeSpan.FromSeconds(3); // the interval at which the background auto-save task runs
 
         private readonly TaskService _taskService;
-        private string _lastActivity = "None yet";
+        private string _lastActivity = "None yet"; 
 
-        public ConsoleUI(TaskService taskService)
+        public ConsoleUI(TaskService taskService) // constructor, takes a TaskService instance as a dependency
         {
-            _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
+            _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService)); 
         }
 
-        /// <summary>Runs the program until the user chooses Exit.</summary>
-        public async Task RunAsync()
+        public async Task RunAsync() // The main menu loop, runs until the user chooses Exit
         {
-            // Event handling: subscribe a handler (method) to the service's TaskChanged event.
-            _taskService.TaskChanged += OnTaskChanged;
+            
+            _taskService.TaskChanged += OnTaskChanged; 
 
-            await LoadTasksAsync();
+            await LoadTasksAsync(); // load tasks from storage at the start of the program
 
-            // Start the background auto-save. It is NOT awaited here, so it runs at the same
-            // time as the menu loop below (even while we wait in Console.ReadLine).
-            using CancellationTokenSource cancellation = new CancellationTokenSource();
-            Task autoSaveTask = _taskService.RunAutoSaveAsync(AutoSaveInterval, cancellation.Token);
+            using CancellationTokenSource cancellation = new CancellationTokenSource(); // used to cancel the background auto-save task when the program exits
+            Task autoSaveTask = _taskService.RunAutoSaveAsync(AutoSaveInterval, cancellation.Token); // start the background auto-save task
 
             try
             {
@@ -86,8 +79,8 @@ namespace TaskManager.UI
                                 break;
                         }
                     }
-                    // Exception handling: each kind of error gets its own handler (catch block).
-                    catch (TaskValidationException ex)
+                    
+                    catch (TaskValidationException ex) // catch validation errors thrown by the service
                     {
                         Console.WriteLine($"Invalid data: {ex.Message}");
                     }
@@ -104,8 +97,8 @@ namespace TaskManager.UI
             }
             finally
             {
-                // finalisation: runs on normal exit AND if an unexpected error ends the loop.
-                cancellation.Cancel();
+               
+                cancellation.Cancel(); 
                 await autoSaveTask;
 
                 _taskService.TaskChanged -= OnTaskChanged;
@@ -114,20 +107,12 @@ namespace TaskManager.UI
             }
         }
 
-        // ------------------------------------------------------------------
-        // Event handler
-        // ------------------------------------------------------------------
-
-        private void OnTaskChanged(object? sender, TaskChangedEventArgs e)
+        private void OnTaskChanged(object? sender, TaskChangedEventArgs e) // called when the TaskChanged event is raised by the TaskService
         {
             _lastActivity = $"{e.Change} task #{e.Task.Id} ({e.Task.Title})";
         }
 
-        // ------------------------------------------------------------------
-        // Menu actions
-        // ------------------------------------------------------------------
-
-        private async Task LoadTasksAsync()
+        private async Task LoadTasksAsync() // called at the start of RunAsync to load tasks from storage
         {
             try
             {
@@ -143,8 +128,8 @@ namespace TaskManager.UI
 
         private void DisplayMenu()
         {
-            // Console.Clear throws if the output is redirected to a file, so check first.
-            if (!Console.IsOutputRedirected)
+            
+            if (!Console.IsOutputRedirected) 
             {
                 Console.Clear();
             }
@@ -156,20 +141,20 @@ namespace TaskManager.UI
             Console.WriteLine($"Tasks      : {_taskService.TaskCount}");
 
 
-            Console.WriteLine("1. Add Task");
-            Console.WriteLine("2. View Tasks");
-            Console.WriteLine("3. Complete Task");
-            Console.WriteLine("4. Update Task");
-            Console.WriteLine("5. Delete Task");
+            Console.WriteLine("1. Add a Task");
+            Console.WriteLine("2. View the Tasks");
+            Console.WriteLine("3. Complete a Task");
+            Console.WriteLine("4. Update a Task");
+            Console.WriteLine("5. Delete a Task");
             Console.WriteLine("6. Save Tasks");
             Console.WriteLine("7. Exit");
             Console.WriteLine();
             Console.Write("Enter your choice: ");
         }
 
-        private void AddTask()
+        private void AddTask() // called when the user chooses Add Task
         {
-            Console.WriteLine("===== ADD TASK =====");
+            Console.WriteLine("===== ADD A TASK =====");
             Console.WriteLine();
 
             string title = ReadRequiredInput("Enter task title: ");
@@ -183,7 +168,7 @@ namespace TaskManager.UI
             Console.WriteLine($"Task #{created.Id} added. It is saved automatically within a few seconds.");
         }
 
-        private void ViewTasks()
+        private void ViewTasks() // called when the user chooses View Tasks
         {
             Console.WriteLine("===== VIEW TASKS =====");
             Console.WriteLine();
@@ -221,7 +206,7 @@ namespace TaskManager.UI
             }
         }
 
-        private void CompleteTask()
+        private void CompleteTask() // called when the user chooses Complete Task
         {
             Console.WriteLine("===== COMPLETE TASK =====");
             Console.WriteLine();
@@ -250,9 +235,9 @@ namespace TaskManager.UI
             }
         }
 
-        private void UpdateTask()
+        private void UpdateTask() // called when the user chooses Update Task
         {
-            Console.WriteLine("===== UPDATE TASK =====");
+            Console.WriteLine("===== UPDATE A TASK =====");
             Console.WriteLine();
 
             int id = ReadInteger("Enter the task ID: ");
@@ -281,9 +266,9 @@ namespace TaskManager.UI
             Console.WriteLine(updated ? "Task updated successfully." : "Task could not be updated.");
         }
 
-        private void DeleteTask()
+        private void DeleteTask() // called when the user chooses Delete Task
         {
-            Console.WriteLine("===== DELETE TASK =====");
+            Console.WriteLine("===== DELETE A TASK =====");
             Console.WriteLine();
 
             int id = ReadInteger("Enter the task ID: ");
@@ -317,7 +302,7 @@ namespace TaskManager.UI
             }
         }
 
-        private async Task SaveNowAsync()
+        private async Task SaveNowAsync() // called when the user chooses Save Tasks    
         {
             Console.WriteLine("===== SAVE NOW =====");
             Console.WriteLine();
@@ -328,7 +313,7 @@ namespace TaskManager.UI
             Console.WriteLine($"File location: {_taskService.StorageLocation}");
         }
 
-        private async Task SaveOnExitAsync()
+        private async Task SaveOnExitAsync() // called when the user chooses Exit, or if an unexpected error ends the menu loop
         {
             try
             {
@@ -344,16 +329,7 @@ namespace TaskManager.UI
                 Console.WriteLine($"WARNING - the tasks could not be saved: {ex.Message}");
             }
         }
-
-        // ------------------------------------------------------------------
-        // Input helpers (validation loops: keep asking until the input is valid)
-        // ------------------------------------------------------------------
-
-        /// <summary>
-        /// Reads one line. Console.ReadLine returns null when the input stream is closed;
-        /// we turn that into an exception so the program ends instead of looping forever.
-        /// </summary>
-        private static string ReadLine()
+        private static string ReadLine() // returns the string entered by the user, throws an exception if the input stream is closed
         {
             return Console.ReadLine() ?? throw new EndOfStreamException("Console input was closed.");
         }
@@ -365,7 +341,7 @@ namespace TaskManager.UI
             ReadLine();
         }
 
-        private static string ReadRequiredInput(string message)
+        private static string ReadRequiredInput(string message) // returns the string entered by the user, keeps asking until a non-empty string is entered
         {
             while (true)
             {
@@ -382,8 +358,7 @@ namespace TaskManager.UI
             }
         }
 
-        /// <summary>Returns what the user typed, or "current" if they just pressed Enter.</summary>
-        private static string ReadWithDefault(string message, string current)
+        private static string ReadWithDefault(string message, string current) // returns the current value if the user presses Enter
         {
             Console.Write(message);
 
@@ -392,7 +367,7 @@ namespace TaskManager.UI
             return string.IsNullOrWhiteSpace(input) ? current : input.Trim();
         }
 
-        private static int ReadInteger(string message)
+        private static int ReadInteger(string message) // returns the integer entered by the user, keeps asking until a valid integer is entered
         {
             while (true)
             {
@@ -407,7 +382,7 @@ namespace TaskManager.UI
             }
         }
 
-        private static Priority ReadPriority(string message, Priority defaultValue)
+        private static Priority ReadPriority(string message, Priority defaultValue) // returns the priority chosen by the user, or the default value if they press Enter
         {
             while (true)
             {
@@ -420,8 +395,7 @@ namespace TaskManager.UI
                     return defaultValue;
                 }
 
-                // Switch expression with "or" patterns; null means "not recognised".
-                Priority? parsed = input.ToUpperInvariant() switch
+                Priority? parsed = input.ToUpperInvariant() switch // convert the input to uppercase and matches it to the Priority enum value
                 {
                     "L" or "LOW" => Priority.Low,
                     "M" or "MEDIUM" => Priority.Medium,
@@ -438,7 +412,7 @@ namespace TaskManager.UI
             }
         }
 
-        private static TaskFilter ReadFilter()
+        private static TaskFilter ReadFilter() // returns the filter chosen by the user
         {
             while (true)
             {
@@ -465,9 +439,9 @@ namespace TaskManager.UI
             }
         }
 
-        /// <summary>Reads a due date for a NEW task. Enter = no due date. Past dates are refused.</summary>
-        private static DateTime? ReadOptionalDate(string message)
-        {
+        
+        private static DateTime? ReadOptionalDate(string message) // returns null if the user presses Enter
+        { 
             while (true)
             {
                 Console.Write(message);
@@ -486,8 +460,8 @@ namespace TaskManager.UI
             }
         }
 
-        /// <summary>Reads a due date for an UPDATE: Enter = keep, "none" = remove the date.</summary>
-        private static DateTime? ReadDueDateForUpdate(DateTime? current)
+        
+        private static DateTime? ReadDueDateForUpdate(DateTime? current) // current = the existing due date, or null if none
         {
             string currentText = current.HasValue ? current.Value.ToString(DateFormat) : "none";
 
@@ -514,11 +488,9 @@ namespace TaskManager.UI
             }
         }
 
-        /// <summary>Parses yyyy-MM-dd and prints the reason if the text is not acceptable.</summary>
         private static bool TryParseFutureDate(string input, out DateTime date)
         {
-            // ParseExact + InvariantCulture: the same format works on every computer.
-            if (!DateTime.TryParseExact(input, DateFormat, CultureInfo.InvariantCulture,
+            if (!DateTime.TryParseExact(input, DateFormat, CultureInfo.InvariantCulture, 
                     DateTimeStyles.None, out date))
             {
                 Console.WriteLine($"Please use the format {DateFormat} (for example 2026-12-31).");
