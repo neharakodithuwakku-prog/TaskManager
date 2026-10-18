@@ -7,5 +7,5 @@ namespace TaskManager.Models
         Pending,
         Completed,
         Overdue
-    }
-}
+    } 
+}                                                          
